@@ -1,0 +1,335 @@
+var population;
+var lifespan = 4000;
+var count = 0,generation=1;
+var lifeP;
+var target;
+
+var globalMaxfit=0;
+
+
+var rx=420,ry=300,rw=500,rh=10;
+function setup() {
+    createCanvas(1300, 700);
+    //rocket = new Rocket();
+    population = new Population();    // craetes an object named population of the constructor Population
+
+
+
+    lifeP = createP();
+    target = createVector(width/2 , 100);
+}
+
+
+function draw() {
+    background(100);
+    population.run();
+    lifeP.html("Lifespan (iteration):"+ count+"<br> Generation :"+generation +"<br>Global best fitness value:"+ globalMaxfit+"<br>Best Fitness of this current generation:  ");
+    count++;
+    //lifeP.html(generation);
+
+
+                if (count == lifespan) 
+                {
+                    count = 0;
+                    population.evaluate();
+                    population.selection();
+
+                    generation++;
+                    //population = new Population();
+
+                }
+    //rocket.update();
+    //rocket.show();
+    
+    rect(420,300,500,10);     //obstacle
+    ellipse(target.x, target.y, 16, 16);            // in future try to make it a moving target
+}
+
+
+
+
+
+
+
+
+function Population() {      //----> evaluate, selection ,run    (functions of the constructor population)
+
+    
+    
+    //------variables of population-----//
+
+    this.rockets = []; //array of rockets
+    this.popsize = 250;
+    this.matingpool = []; //empty array containing parents according to their probability coz of their fitness more the fitness more is the  probability
+
+
+    for (var i = 0; i < this.popsize; i++) {
+        this.rockets[i] = new Rocket();             //250 rockets[i] object are prepard of the type Rocket
+    }
+    //----end of variables---------//
+
+
+    this.evaluate = function ()
+    {         
+
+        var maxfit = 0;
+        for (var i = 0; i < this.popsize; i++)
+        {
+            this.rockets[i].calcFitness();
+            if (this.rockets[i].fitness > maxfit)
+            {
+                maxfit = this.rockets[i].fitness;
+            }
+
+        }
+        
+        
+        if(maxfit>globalMaxfit)
+            {globalMaxfit=maxfit;}
+    
+        createP(maxfit);
+
+        for (var i = 0; i < this.popsize; i++) 
+        {
+            this.rockets[i].fitness /= maxfit;
+        }
+        this.matingpool = [];//Initially clear mating pool
+
+
+        for (var i = 0; i < this.popsize; i++) 
+        {
+            var n = this.rockets[i].fitness * 100;
+            for (var j = 0; j < n; j++)
+            {
+                this.matingpool.push(this.rockets[i]);
+            }
+
+        }
+
+    }
+
+
+    this.selection = function () 
+    {
+        var newRockets = [];
+        for (var i = 0; i < this.rockets.length; i++)    // rockets.length=250 ie 250 child rockets will be producedthat will have  some characteristics of parentA's dna and some characteristics of parentB's dna
+        {     
+
+            var parentA = random(this.matingpool).dna;  //chooses a random parentA from matingpool as per probability
+            var parentB = random(this.matingpool).dna;  //chooses a random parentB from matingpool as per probability
+            var child = parentA.crossover(parentB);
+            child.mutation();
+            newRockets[i] = new Rocket(child);
+
+        }
+        this.rockets = newRockets;              // rockets[] = newRockets[] ie is full array gets copied
+    }
+
+
+    this.run = function ()
+    {
+        for (var i = 0; i < this.popsize; i++)
+        {
+            this.rockets[i].update();
+            this.rockets[i].show();
+        }
+    }
+    
+    
+    
+
+}
+
+
+
+
+
+
+
+
+
+function Dna(genes) {               //---->  crossover
+
+    if (genes)
+    {  this.genes = genes;    }
+    else 
+    {
+        this.genes = [];
+        for (var i = 0; i < lifespan; i++) 
+        {
+            this.genes[i] = p5.Vector.random2D();
+            this.genes[i].setMag(0.5);
+        }
+    }
+
+
+    this.crossover = function (partner) 
+    {
+        var newgenes = [];
+        var mid = floor(random(this.genes.length));
+        for (var i = 0; i < this.genes.length; i++)
+        {
+            if (i > mid)
+            {      newgenes[i] = this.genes[i];       }
+            else 
+            {      newgenes[i] = partner.genes[i];    }
+        }
+        return new Dna(newgenes);
+
+    }
+
+
+    
+    
+    this.mutation =function()
+    {
+        for( var i=0;i< this.genes.length;i++)
+        {
+            
+            if(random(1)<0.01)
+                {
+                    this.genes[i]=p5.Vector.random2D();
+                    this.genes[i].setMag(0.1);
+                }
+            
+        }
+    }
+    
+    
+    
+
+}
+
+
+
+
+
+
+
+
+
+function Rocket(dna) {              //----> calcfitness, applyforce, update, show
+
+    
+    //----variables of rockets-----//
+    this.pos = createVector(width / 2, height-100);
+    this.vel = createVector();
+    this.acc = createVector();
+    this.completed=false;
+    this.crashed=false;
+    
+    //---end of variables-----//
+
+    if (dna) 
+    {this.dna = dna;} 
+    else
+    {this.dna = new Dna();}
+
+   // this.count = 0;
+
+
+    
+    
+    //----Fitness evaluation function---//
+    
+    this.calcFitness = function ()   //to calc the fitness of each rocket i.e  ---->   rocket[i]   
+    {                                                                                                  
+        var d = dist(this.pos.x, this.pos.y, target.x, target.y)   
+        //this.fitness = 1/d ;//
+        this.fitness =map(d, 0, width, width, 0);     //fitness function
+        
+        if(this.completed)
+            {
+                this.fitness*=10;
+            }
+        if(this.crashed)
+            {
+                this.fitness=0;
+            }
+
+    }
+    //---fitness evaluation function ends---//
+
+    
+    //----Physics Engine Design-----//
+    
+    this.applyForce = function (force) { //learn about physics simulation 
+        this.acc.add(force);
+    }
+
+    this.update = function () 
+    {
+
+        this.applyForce(this.dna.genes[count]);
+        
+         var d = dist(this.pos.x, this.pos.y, target.x, target.y)   
+       if(d<10)
+              {this.completed=true;
+              this.pos=target.copy();
+              //craeteP(d);
+              }
+        
+        if(this.pos.x> rx && this.pos.x< rx+rw && this.pos.y>ry &&this.pos.y< ry+rh )
+            {
+                this.crashed=true;
+            }
+   
+        
+         if(this.pos.x<0  || this.pos.x>width || this.pos.y>height ||this.pos.y< 0)
+            {
+                this.crashed=true;
+            }
+   
+       if(!this.completed && !this.crashed)
+            {
+
+            this.vel.add(this.acc);
+            this.pos.add(this.vel);
+            this.acc.mult(0);
+            } 
+    }
+    
+    //----Physics Engine design ends-----//
+
+
+    
+    
+    //----Design of rocket----------//
+    
+    this.show = function ()     //chk why push and pop?
+    {
+        push();
+
+        noStroke();
+        fill(255, 150);
+        translate(this.pos.x, this.pos.y);
+        rotate(this.vel.heading());
+        rectMode(CENTER);
+        rect(0, 0, 25, 5);
+        // ellipse(0, 0, 25, 5); //rect(0, 100, 25, 5);   //rect(10, 110, 25, 5);
+
+
+        pop();
+
+    }
+    
+    //-----Design of rocket ends------//
+    
+    
+    
+
+}
+
+
+
+//can the sperm be taught to learn with time to hit an ovum???
+//A girl having abnormalities in pregnancy can this be used in the future?
+//automatic bombardment of a specific position with time probability will increase , think like even if the target moves our samrt bombs will find it eventually
+
+
+/*-------------------  bibliography----------------------
+1.coding train
+2.soft computing
+3.amit konar soft computing
+4.siraj raval
+5.Gkm sirs slide*/
