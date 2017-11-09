@@ -1,6 +1,3 @@
-                                        //-------SMART ROCKETS-----//
-
-
 var population;
 var lifespan = 400;
 var count = 0,generation=1;
@@ -11,22 +8,16 @@ var globalbestHitCount=0;
 var globalMaxfit=0;
 
 
-var rx=480,ry=300,rw=400,rh=10;
-var rx1=420,ry1=100,rw1=10,rh1=200;
-var rx2=420,ry2=100,rw2=500,rh2=10;
-var rx3=920,ry3=100,rw3=10,rh3=200;
-
+var rx=420,ry=300,rw=500,rh=10;
 function setup() {
-    createCanvas(1330, 700);
-    
+    createCanvas(1300, 700);
     //rocket = new Rocket();
     population = new Population();    // craetes an object named population of the constructor Population
 
 
-    
-   
+
     lifeP = createP();
-    target = createVector(width/2 , 200);
+    target = createVector(width/2 , 100);
 }
 
 
@@ -37,7 +28,6 @@ function draw() {
     count++;
     //lifeP.html(generation);
 
-               
 
                 if (count == lifespan) 
                 {   
@@ -58,11 +48,8 @@ function draw() {
     //rocket.update();
     //rocket.show();
     
-    rect(rx,ry,rw,rh);     //obstacle
-   rect(rx1,ry1,rw1,rh1);     //obstacle
-    rect(rx2,ry2,rw2,rh2);     //obstacle
-    rect(rx3,ry3,rw3,rh3);     //obstacle 
-    ellipse(target.x , target.y, 16, 16);            // in future try to make it a moving target
+    rect(420,300,500,10);     //obstacle
+    ellipse(target.x, target.y, 16, 16);            // in future try to make it a moving target
 }
 
 
@@ -234,7 +221,7 @@ function Rocket(dna) {              //----> calcfitness, applyforce, update, sho
 
     
     //----variables of rockets-----//
-    this.pos = createVector(width/2 , height-100);
+    this.pos = createVector(width / 2, height-100);
     this.vel = createVector();
     this.acc = createVector();
     this.completed=false;
@@ -256,8 +243,8 @@ function Rocket(dna) {              //----> calcfitness, applyforce, update, sho
     
     this.calcFitness = function ()   //to calc the fitness of each rocket i.e  ---->   rocket[i]   
     {                                                                                                  
-        var d = dist(this.pos.x, this.pos.y, target.x , target.y)   
-         // this.fitness = 1/d ;//
+        var d = dist(this.pos.x, this.pos.y, target.x, target.y)   
+        //this.fitness = 1/d ;//
         this.fitness =map(d, 0, width, width, 0);     //fitness function
         
         if(this.completed)
@@ -285,7 +272,7 @@ function Rocket(dna) {              //----> calcfitness, applyforce, update, sho
     this.hitCountFun =function()
     {
        
-        /*var d = dist(this.pos.x, this.pos.y, target.x, target.y)   
+        /* var d = dist(this.pos.x, this.pos.y, target.x, target.y)   
          //if (d<10)
            //  {    hitCount++;  }
         
@@ -328,50 +315,17 @@ function Rocket(dna) {              //----> calcfitness, applyforce, update, sho
                
               }
         
-        
-        
-        
-        
-        //------Clash with obstacles-----///
         if(this.pos.x> rx && this.pos.x< rx+rw && this.pos.y>ry &&this.pos.y< ry+rh )
             {
                 this.crashed=true;
             }
    
-         if(this.pos.x> rx1 && this.pos.x< rx1+rw1 && this.pos.y>ry1 &&this.pos.y< ry1+rh1 )
-            {
-                this.crashed=true;
-            }
-            
-         if(this.pos.x> rx2 && this.pos.x< rx2+rw2 && this.pos.y>ry2 &&this.pos.y< ry2+rh2 )
+        
+         if(this.pos.x<0  || this.pos.x>width || this.pos.y>height ||this.pos.y< 0)
             {
                 this.crashed=true;
             }
    
-        
-           if(this.pos.x> rx3 && this.pos.x< rx3+rw3 && this.pos.y>ry3 &&this.pos.y< ry3+rh3 )
-            {
-                this.crashed=true;
-            }
-          
-        
-        
-        //------Clash with obstacles  ends-----///
-        
-        
-        ////-----Side wall clash----////
-        if(this.pos.x<0  || this.pos.x>width || this.pos.y>height ||this.pos.y< 0)
-            {
-                this.crashed=true;
-            }
-   
-        ///---Slide wall clash ends----////
-        
-        
-        
-        
-        
-        
        if(!this.completed && !this.crashed)
             {
 
@@ -393,10 +347,9 @@ function Rocket(dna) {              //----> calcfitness, applyforce, update, sho
         push();
 
         noStroke();
-        //fill(255,100);
-        fill(random(255),random(255),random(255));
+        fill(255, 150);
         translate(this.pos.x, this.pos.y);
-        rotate(this.vel.heading());
+        //rotate(this.vel.heading());
         rectMode(CENTER);
         ellipse(0, 0, 25, 5);
         // ellipse(0, 0, 25, 5); //rect(0, 100, 25, 5);   //rect(10, 110, 25, 5);
